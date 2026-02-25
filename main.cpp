@@ -9,7 +9,7 @@ struct Photon{
   float speed;
   Vector2 trail[TRAIL_LENGTH];
   int TrailIndex=0;
-};
+}; //hello nithish
 struct Planet{
   Vector2 posi;
   float radius;
