@@ -36,7 +36,7 @@ void drag(Photon& peas){
 int main(){
   InitWindow(1000,1000, "hole");
   SetTargetFPS(30);
-  Photon photo1={5,WHITE,{1.0f,1.0f},{100,100},50};
+  Photon photo1={5,WHITE,{1.0f,1.0f},{100,100},90};
   Planet hole={{500,500},50,RED,50000};
  
   while(WindowShouldClose()==false){
