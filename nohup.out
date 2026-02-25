@@ -1,0 +1,28 @@
+info: ghostty version=1.2.3-arch3
+info: ghostty build optimize=ReleaseFast
+info: runtime=apprt.Runtime.gtk
+info: font_backend=font.main.Backend.fontconfig_freetype
+info: dependency harfbuzz=12.3.2
+info: dependency fontconfig=21701
+info: renderer=renderer.generic.Renderer(renderer.OpenGL)
+info: libxev default backend=io_uring
+info(os_locale): setlocale from env result=en_US.UTF-8
+info(gtk): GTK version build=4.20.3 runtime=4.20.3
+info(gtk): libadwaita version build=1.8.4 runtime=1.8.4
+info: reading configuration file path=/home/amar/.config/ghostty/config
+info(config): default shell source=env value=/usr/bin/zsh
+warning(gtk_ghostty_application): setting GDK_DEBUG=
+warning(gtk_ghostty_application): setting GDK_DISABLE=gles-api,vulkan
+info(gtk_ghostty_application): cgroup isolation disabled via config=config.Config.LinuxCgroup.single-instance
+info(opengl): loaded OpenGL 4.6
+info(font_shared_grid_set): font regular: JetBrainsMono NF Regular
+info(font_shared_grid_set): font bold: JetBrainsMono NF Bold
+info(font_shared_grid_set): font italic: JetBrainsMono NF Italic
+info(font_shared_grid_set): font bold_italic: JetBrainsMono NF Bold Italic
+info(io_exec): found Ghostty resources dir: /usr/share/ghostty
+info(io_exec): shell integration automatically injected shell=termio.shell_integration.Shell.zsh
+warning(gtk_ghostty_application): unimplemented action=apprt.action.Action.Key.cell_size
+info(io_exec): started subcommand path=/bin/sh pid=37143
+info(io_exec): subcommand cgroup=-
+info(io_exec): pty fd closed, read thread exiting
+info(surface): surface closed addr=5c98913dc190
