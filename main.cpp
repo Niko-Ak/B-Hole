@@ -49,10 +49,10 @@ void gravy(Photon& peas,Planet& boss){
 // light doesn't feel the drag in vacuum.  
 
 void resetPhoton(Photon& p, Planet& hole){
-    p.posi = {};
-    p.dire = {};
-    p.speed = ;
-    for(int i = 0 ; i<TRAIL_LENGTH; i++) p.trail[i] = p.posi;
+    p.posi  = {100, 100};
+    p.dire  = {0.707f, 0.707f};
+    p.speed = 90.0f;
+    for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi;
     p.TrailIndex = 0;
 }
 
@@ -80,8 +80,8 @@ int main(){
     photo1.posi.x+=(photo1.dire.x*photo1.speed)*GetFrameTime();
     photo1.posi.y+=(photo1.dire.y*photo1.speed)*GetFrameTime();
     
-    float dx = hole.posi.x - photo.posi.x;
-    float dy = hole.posi.y - photo.posi.y;
+    float dx = hole.posi.x - photo1.posi.x;
+    float dy = hole.posi.y - photo1.posi.y;
     float dist = sqrtf(dx*dx + dy*dy);
     if(dist < hole.radius){
         resetPhoton(photo1, hole);
