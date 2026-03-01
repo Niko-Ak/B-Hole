@@ -2,6 +2,5 @@
 ---
 ## Run:
 1. Git clone this repo
-2. type `make` and enter in Terminal
+2. type `make` and enter in Terminal **The Makefile supports both windows and linux(macos guys do it yourself-Arm64)**
 3. Voila!! Program Runs
-# **Important**: for windows, optimize the makefile for .exe output binary 
