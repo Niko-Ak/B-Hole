@@ -67,6 +67,15 @@ void resetPhoton(Photon& p){
     p.TrailIndex = 0;
 }
 
+void DrawGlowCircle(Vector2 pos, float r, Color c, int layers=6){
+  for(int i=layers;i>0;i--){
+      float size = r + i*3.0f;
+      float alpha = 0.08f / i;
+      DrawCircleV(pos, size, Fade(c, alpha));
+  }
+  DrawCircleV(pos, r, c);
+}
+
 int main(){
   InitWindow(1000,1000, "Black Hole");
   SetTargetFPS(60);
@@ -106,6 +115,8 @@ int main(){
       photo1[i].trail[photo1[i].TrailIndex]=photo1[i].posi;
       photo1[i].TrailIndex=(photo1[i].TrailIndex+1)%TRAIL_LENGTH;
     }
+
+    if(IsKeyPressed(KEY_Q)) break;
 
     BeginDrawing();
     ClearBackground(BLACK);
