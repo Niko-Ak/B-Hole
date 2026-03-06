@@ -1,6 +1,7 @@
 #include<raylib.h>
 #include<cmath>
 #define TRAIL_LENGTH 64
+#define PHOTON_COUNT 64
 
 struct Photon{
   float r;
@@ -60,8 +61,8 @@ void gravy(Photon& peas,Planet& boss){
 // light doesn't feel the drag in vacuum.  
 
 void resetPhoton(Photon& p, Planet& hole){
-    p.posi  = {p.initposi.x,p.initposi.y};
-    p.dire  = {p.initdire.x, p.initdire.y};
+    //p.posi  = {p.initposi.x,p.initposi.y};
+    //p.dire  = {p.initdire.x, p.initdire.y};   //uncomment these two lines for reset
     for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi; // small fix because the resetPhoton forces the photon to go 100,100 even if change the psoition on top
     p.TrailIndex = 0;
 }
@@ -70,9 +71,18 @@ int main(){
   InitWindow(1000,1000, "Black Hole");
   SetTargetFPS(60);
 
-  Photon photo1={5,WHITE,{0.707f,0.707f},{50,300},90};photo1.init(); //do this to assign posi and dire to initposi and initdire
-  Photon photo2={5,WHITE,{0.707f,0.707f},{55,300},90};photo2.init();
-  Photon photo3={5,WHITE,{0.707f,0.707f},{50,305},90};photo3.init();
+  //Photon photo1={5,WHITE,{0.707f,0.707f},{50,300},90};photo1.init(); //do this to assign posi and dire to initposi and initdire
+  Photon photo1[PHOTON_COUNT];
+  for(int i=0;i<PHOTON_COUNT;i++){
+        photo1[i].r     = 4;
+        photo1[i].color = WHITE;
+        photo1[i].speed = 90.0f;
+        photo1[i].dire  = {0.707f, 0.707f};
+        photo1[i].posi  = {50.0f, 280.0f + i * 10.0f}; // spread vertically   //go tweak the PHOTO_COUNT for funnn
+        photo1[i].init();
+        for (int j = 0; j < TRAIL_LENGTH; j++) photo1[i].trail[j] = photo1[i].posi;
+
+  }
 
   Planet hole;
   hole.posi    = {500, 500};
@@ -81,56 +91,39 @@ int main(){
   hole.gravity = 50000;
   hole.horizon = hole.gravity * 0.006f;
  
-  while(WindowShouldClose()==false){
+  while(!WindowShouldClose()){
 
-    //movement logic
-     
-    //attraction towards planet
-    gravy(photo1,hole);
-    
-    photo1.posi.x+=(photo1.dire.x*photo1.speed)*GetFrameTime();
-    photo1.posi.y+=(photo1.dire.y*photo1.speed)*GetFrameTime();
-    
-    float dx = hole.posi.x - photo1.posi.x;
-    float dy = hole.posi.y - photo1.posi.y;
-    float dist = sqrtf(dx*dx + dy*dy);
-    if(dist < hole.radius){
-        resetPhoton(photo1, hole);
+    for(int i=0;i<PHOTON_COUNT;i++){
+      gravy(photo1[i],hole);
+      photo1[i].posi.x+=photo1[i].dire.x*photo1[i].speed*GetFrameTime();
+      photo1[i].posi.y+=photo1[i].dire.y*photo1[i].speed*GetFrameTime();
+
+      float dx=hole.posi.x-photo1[i].posi.x;
+      float dy=hole.posi.y-photo1[i].posi.y;
+      if(sqrtf(dx*dx+dy*dy)<hole.radius)
+        resetPhoton(photo1[i],hole);
+
+      photo1[i].trail[photo1[i].TrailIndex]=photo1[i].posi;
+      photo1[i].TrailIndex=(photo1[i].TrailIndex+1)%TRAIL_LENGTH;
     }
 
-    //Trail logic
-    photo1.trail[photo1.TrailIndex]=photo1.posi;
-    photo1.TrailIndex=(photo1.TrailIndex+1)%TRAIL_LENGTH;
-    //Draw here
     BeginDrawing();
     ClearBackground(BLACK);
 
-    // draw event horizon glow
-    DrawCircleGradient(hole.posi.x, hole.posi.y,
-                        hole.radius * 2.5f,
-                        {255, 100, 0, 30},
-                        {0, 0, 0, 0});
+    DrawCircleGradient(hole.posi.x,hole.posi.y,hole.radius*2.5f,{255,100,0,30},{0,0,0,0});
+    DrawCircleLines(hole.posi.x,hole.posi.y,hole.radius*1.5f,{255,140,0,120});
+    DrawCircle(hole.posi.x,hole.posi.y,hole.radius,BLACK);
+    DrawCircleLines(hole.posi.x,hole.posi.y,hole.radius,{60,60,60,200});
 
-    // photon sphere ring (where light can theoretically orbit)
-    DrawCircleLines(hole.posi.x, hole.posi.y,
-                    hole.radius * 1.5f, {255, 140, 0, 120});
-
-    // black hole itself
-    DrawCircle(hole.posi.x, hole.posi.y, hole.radius, BLACK);
-    DrawCircleLines(hole.posi.x, hole.posi.y,
-                    hole.radius, {60, 60, 60, 200});
-                        
-    //Trail drawing
-    for(int i=0;i<TRAIL_LENGTH;i++){
-      int index=(photo1.TrailIndex+i) % TRAIL_LENGTH;
-      float t=(float)i/TRAIL_LENGTH;
-      float alpha=t*t;
-      Color c=Fade(photo1.color,alpha);
-      DrawCircleV(photo1.trail[index],photo1.r,Fade(photo1.color, alpha));
+    for(int i=0;i<PHOTON_COUNT;i++){
+      for(int j=0;j<TRAIL_LENGTH;j++){
+        int index=(photo1[i].TrailIndex+j)%TRAIL_LENGTH;
+        float alpha=(float)j/TRAIL_LENGTH;
+        alpha*=alpha;
+        DrawCircleV(photo1[i].trail[index],photo1[i].r,Fade(photo1[i].color,alpha));
+      }
+      DrawCircleV(photo1[i].posi,photo1[i].r,WHITE);
     }
-
-    // photon
-    DrawCircleV(photo1.posi, photo1.r, WHITE);
 
     EndDrawing();
   }
