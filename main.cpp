@@ -10,6 +10,12 @@ struct Photon{
   float speed;
   Vector2 trail[TRAIL_LENGTH];
   int TrailIndex=0;
+  Vector2 initposi;
+  Vector2 initdire;
+  void init(){
+    initdire=dire;
+    initposi=posi;
+  }
 }; //hello nithish
 
 struct Planet{
@@ -19,7 +25,6 @@ struct Planet{
   float gravity;
   float horizon;
 };
-
 void gravy(Photon& peas,Planet& boss){
   float dx=boss.posi.x-peas.posi.x;
   float dy=boss.posi.y-peas.posi.y;
@@ -34,10 +39,16 @@ void gravy(Photon& peas,Planet& boss){
 
     float photon_sphere = boss.radius * 1.5f;
     if(dist < photon_sphere * 3.0f){
-        float boost = (boss.gravity * 2.0f) / (dist * dist * dist )* boss.radius;
+        float boost = (boss.gravity * 2.0f) / (dist * dist * dist )* boss.radius; //this block right here is to normalize the speed of the photon, before this code the photon accelerate when approaching the blackhole but photon does not work like that photon can slow down but cant speed up above the speed of light
         peas.dire.x += (dx / dist) * boost * dt;
         peas.dire.y += (dy / dist) * boost * dt;
     }
+  }
+  float mag = sqrtf(peas.dire.x*peas.dire.x+peas.dire.y*peas.dire.y);
+  if(mag>0.0f){
+    peas.dire.x/=mag;
+    peas.dire.y/=mag;
+
   }
 }
 
@@ -49,10 +60,9 @@ void gravy(Photon& peas,Planet& boss){
 // light doesn't feel the drag in vacuum.  
 
 void resetPhoton(Photon& p, Planet& hole){
-    p.posi  = {100, 100};
-    p.dire  = {0.707f, 0.707f};
-    p.speed = 90.0f;
-    for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi;
+    p.posi  = {p.initposi.x,p.initposi.y};
+    p.dire  = {p.initdire.x, p.initdire.y};
+    for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi; // small fix because the resetPhoton forces the photon to go 100,100 even if change the psoition on top
     p.TrailIndex = 0;
 }
 
@@ -60,7 +70,9 @@ int main(){
   InitWindow(1000,1000, "Black Hole");
   SetTargetFPS(60);
 
-  Photon photo1={5,WHITE,{0.707f,0.707f},{100,100},90};
+  Photon photo1={5,WHITE,{0.707f,0.707f},{50,300},90};photo1.init(); //do this to assign posi and dire to initposi and initdire
+  Photon photo2={5,WHITE,{0.707f,0.707f},{55,300},90};photo2.init();
+  Photon photo3={5,WHITE,{0.707f,0.707f},{50,305},90};photo3.init();
 
   Planet hole;
   hole.posi    = {500, 500};
@@ -75,7 +87,6 @@ int main(){
      
     //attraction towards planet
     gravy(photo1,hole);
-
     
     photo1.posi.x+=(photo1.dire.x*photo1.speed)*GetFrameTime();
     photo1.posi.y+=(photo1.dire.y*photo1.speed)*GetFrameTime();
