@@ -60,7 +60,7 @@ void gravy(Photon& peas,Planet& boss){
 // }
 // light doesn't feel the drag in vacuum.  
 
-void resetPhoton(Photon& p, Planet& hole){
+void resetPhoton(Photon& p){
     //p.posi  = {p.initposi.x,p.initposi.y};
     //p.dire  = {p.initdire.x, p.initdire.y};   //uncomment these two lines for reset
     for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi; // small fix because the resetPhoton forces the photon to go 100,100 even if change the psoition on top
