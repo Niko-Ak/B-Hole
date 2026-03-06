@@ -101,7 +101,7 @@ int main(){
       float dx=hole.posi.x-photo1[i].posi.x;
       float dy=hole.posi.y-photo1[i].posi.y;
       if(sqrtf(dx*dx+dy*dy)<hole.radius)
-        resetPhoton(photo1[i],hole);
+        resetPhoton(photo1[i]);
 
       photo1[i].trail[photo1[i].TrailIndex]=photo1[i].posi;
       photo1[i].TrailIndex=(photo1[i].TrailIndex+1)%TRAIL_LENGTH;
