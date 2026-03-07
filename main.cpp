@@ -2,21 +2,12 @@
 #include<cmath>
 #define TRAIL_LENGTH 64
 
-
-struct State{
-  float r;
-  float phi;
-  float vr;
-  float vphi;
-};
-
-
 struct Photon{
   float r;
   Color color;
   State state;
   Vector2 trail[TRAIL_LENGTH];
-  int TrailIndex = 0;
+  int TrailIndex=0;
 }; //hello nithish
 
 struct Planet{
@@ -28,7 +19,6 @@ struct Planet{
   // float horizon;
   
 };
-
 void gravy(Photon& peas,Planet& boss){
   float dx=boss.posi.x-peas.posi.x;
   float dy=boss.posi.y-peas.posi.y;
@@ -43,10 +33,16 @@ void gravy(Photon& peas,Planet& boss){
 
     float photon_sphere = boss.radius * 1.5f;
     if(dist < photon_sphere * 3.0f){
-        float boost = (boss.gravity * 2.0f) / (dist * dist * dist )* boss.radius;
+        float boost = (boss.gravity * 2.0f) / (dist * dist * dist )* boss.radius; //this block right here is to normalize the speed of the photon, before this code the photon accelerate when approaching the blackhole but photon does not work like that photon can slow down but cant speed up above the speed of light
         peas.dire.x += (dx / dist) * boost * dt;
         peas.dire.y += (dy / dist) * boost * dt;
     }
+  }
+  float mag = sqrtf(peas.dire.x*peas.dire.x+peas.dire.y*peas.dire.y);
+  if(mag>0.0f){
+    peas.dire.x/=mag;
+    peas.dire.y/=mag;
+
   }
 }
 
@@ -69,19 +65,27 @@ State computeDerivatives(State s, float rs, float c){
 // }
 // light doesn't feel the drag in vacuum.  
 
-void resetPhoton(Photon& p, Planet& hole){
-    p.posi  = {100, 100};
-    p.dire  = {0.707f, 0.707f};
-    p.speed = 90.0f;
-    for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi;
+void resetPhoton(Photon& p){
+    //p.posi  = {p.initposi.x,p.initposi.y};
+    //p.dire  = {p.initdire.x, p.initdire.y};   //uncomment these two lines for reset
+    for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi; // small fix because the resetPhoton forces the photon to go 100,100 even if change the psoition on top
     p.TrailIndex = 0;
+}
+
+void DrawGlowCircle(Vector2 pos, float r, Color c, int layers=6){
+  for(int i=layers;i>0;i--){
+      float size = r + i*3.0f;
+      float alpha = 0.08f / i;
+      DrawCircleV(pos, size, Fade(c, alpha));
+  }
+  DrawCircleV(pos, r, c);
 }
 
 int main(){
   InitWindow(1000,1000, "Black Hole");
   SetTargetFPS(60);
 
-  Photon photo1={5,WHITE,{1.0f,1.0f},{200,100},50.0f};
+  Photon photo1={5,WHITE,{0.707f,0.707f},{100,100},90};
 
   Planet hole;
   hole.posi    = {500, 500};
@@ -90,57 +94,41 @@ int main(){
   hole.gravity = 100000;
   hole.horizon = hole.gravity * 0.006f;
  
-  while(WindowShouldClose()==false){
+  while(!WindowShouldClose()){
 
-    //movement logic
-     
-    //attraction towards planet
-    gravy(photo1,hole);
+    for(int i=0;i<PHOTON_COUNT;i++){
+      gravy(photo1[i],hole);
+      photo1[i].posi.x+=photo1[i].dire.x*photo1[i].speed*GetFrameTime();
+      photo1[i].posi.y+=photo1[i].dire.y*photo1[i].speed*GetFrameTime();
 
-    
-    photo1.posi.x+=(photo1.dire.x*photo1.speed)*GetFrameTime();
-    photo1.posi.y+=(photo1.dire.y*photo1.speed)*GetFrameTime();
-    
-    float dx = hole.posi.x - photo1.posi.x;
-    float dy = hole.posi.y - photo1.posi.y;
-    float dist = sqrtf(dx*dx + dy*dy);
-    if(dist < hole.radius){
-        resetPhoton(photo1, hole);
+      float dx=hole.posi.x-photo1[i].posi.x;
+      float dy=hole.posi.y-photo1[i].posi.y;
+      if(sqrtf(dx*dx+dy*dy)<hole.radius)
+        resetPhoton(photo1[i]);
+
+      photo1[i].trail[photo1[i].TrailIndex]=photo1[i].posi;
+      photo1[i].TrailIndex=(photo1[i].TrailIndex+1)%TRAIL_LENGTH;
     }
 
-    //Trail logic
-    photo1.trail[photo1.TrailIndex]=photo1.posi;
-    photo1.TrailIndex=(photo1.TrailIndex+1)%TRAIL_LENGTH;
-    //Draw here
+    if(IsKeyPressed(KEY_Q)) break;
+
     BeginDrawing();
     ClearBackground(BLACK);
 
-    // draw event horizon glow
-    DrawCircleGradient(hole.posi.x, hole.posi.y,
-                        hole.radius * 2.5f,
-                        {255, 100, 0, 30},
-                        {0, 0, 0, 0});
+    DrawCircleGradient(hole.posi.x,hole.posi.y,hole.radius*2.5f,{255,100,0,30},{0,0,0,0});
+    DrawCircleLines(hole.posi.x,hole.posi.y,hole.radius*1.5f,{255,140,0,120});
+    DrawCircle(hole.posi.x,hole.posi.y,hole.radius,BLACK);
+    DrawCircleLines(hole.posi.x,hole.posi.y,hole.radius,{60,60,60,200});
 
-    // photon sphere ring (where light can theoretically orbit)
-    DrawCircleLines(hole.posi.x, hole.posi.y,
-                    hole.radius * 1.5f, {255, 140, 0, 120});
-
-    // black hole itself
-    DrawCircle(hole.posi.x, hole.posi.y, hole.radius, BLACK);
-    DrawCircleLines(hole.posi.x, hole.posi.y,
-                    hole.radius, {60, 60, 60, 200});
-                        
-    //Trail drawing
-    for(int i=0;i<TRAIL_LENGTH;i++){
-      int index=(photo1.TrailIndex+i) % TRAIL_LENGTH;
-      float t=(float)i/TRAIL_LENGTH;
-      float alpha=t*t;
-      Color c=Fade(photo1.color,alpha);
-      DrawCircleV(photo1.trail[index],photo1.r,Fade(photo1.color, alpha));
+    for(int i=0;i<PHOTON_COUNT;i++){
+      for(int j=0;j<TRAIL_LENGTH;j++){
+        int index=(photo1[i].TrailIndex+j)%TRAIL_LENGTH;
+        float alpha=(float)j/TRAIL_LENGTH;
+        alpha*=alpha;
+        DrawCircleV(photo1[i].trail[index],photo1[i].r,Fade(photo1[i].color,alpha));
+      }
+      DrawCircleV(photo1[i].posi,photo1[i].r,WHITE);
     }
-
-    // photon
-    DrawCircleV(photo1.posi, photo1.r, WHITE);
 
     EndDrawing();
   }
