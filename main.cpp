@@ -2,22 +2,31 @@
 #include<cmath>
 #define TRAIL_LENGTH 64
 
+
+struct State{
+  float r;
+  float phi;
+  float vr;
+  float vphi;
+};
+
+
 struct Photon{
   float r;
   Color color;
-  Vector2 dire;
-  Vector2 posi;
-  float speed;
+  State state;
   Vector2 trail[TRAIL_LENGTH];
-  int TrailIndex=0;
+  int TrailIndex = 0;
 }; //hello nithish
 
 struct Planet{
   Vector2 posi;
   float radius;
   Color color;
-  float gravity;
-  float horizon;
+  float rs;
+  // float gravity;
+  // float horizon;
+  
 };
 
 void gravy(Photon& peas,Planet& boss){
@@ -41,6 +50,18 @@ void gravy(Photon& peas,Planet& boss){
   }
 }
 
+// Schwarzschild radius . 
+// formula: rs = 2GM/c²
+
+State computeDerivatives(State s, float rs, float c){
+  State d;
+
+  
+}
+
+
+
+
 // void drag(Photon& peas){
 //   float drag=0.98f;
 //   peas.dire.x*=drag;
@@ -60,13 +81,13 @@ int main(){
   InitWindow(1000,1000, "Black Hole");
   SetTargetFPS(60);
 
-  Photon photo1={5,WHITE,{0.707f,0.707f},{100,100},90};
+  Photon photo1={5,WHITE,{1.0f,1.0f},{200,100},50.0f};
 
   Planet hole;
   hole.posi    = {500, 500};
   hole.radius  = 50;
   hole.color   = BLACK;
-  hole.gravity = 50000;
+  hole.gravity = 100000;
   hole.horizon = hole.gravity * 0.006f;
  
   while(WindowShouldClose()==false){
