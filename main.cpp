@@ -1,7 +1,7 @@
 #include<raylib.h>
 #include<cmath>
 #define TRAIL_LENGTH 64
-#define PHOTON_COUNT 64
+#define PHOTON_COUNT 120
 
 struct Photon{
   float r;
@@ -13,6 +13,7 @@ struct Photon{
   int TrailIndex=0;
   Vector2 initposi;
   Vector2 initdire;
+  float redshift;
   void init(){
     initdire=dire;
     initposi=posi;
@@ -61,8 +62,8 @@ void gravy(Photon& peas,Planet& boss){
 // light doesn't feel the drag in vacuum.  
 
 void resetPhoton(Photon& p){
-    //p.posi  = {p.initposi.x,p.initposi.y};
-    //p.dire  = {p.initdire.x, p.initdire.y};   //uncomment these two lines for reset
+    p.posi  = {p.initposi.x,p.initposi.y};
+    p.dire  = {p.initdire.x, p.initdire.y};   //uncomment these two lines for reset
     for (int i = 0; i < TRAIL_LENGTH; i++) p.trail[i] = p.posi; // small fix because the resetPhoton forces the photon to go 100,100 even if change the psoition on top
     p.TrailIndex = 0;
 }
@@ -74,6 +75,19 @@ void DrawGlowCircle(Vector2 pos, float r, Color c, int layers=6){
       DrawCircleV(pos, size, Fade(c, alpha));
   }
   DrawCircleV(pos, r, c);
+}
+
+void UpdateRedshift(Photon& peas,Planet& boss){
+  float dx=boss.posi.x-peas.posi.x;
+  float dy=boss.posi.y-peas.posi.y;
+  float dist=sqrtf(dx*dx+dy*dy);
+  float influ=boss.radius*3.0f;
+  if(dist<influ){
+    peas.redshift=1.0f-(dist-boss.radius)/(influ-boss.radius);
+    peas.redshift=fmaxf(0.0f,fminf(1.0,peas.redshift));
+  }
+  else peas.redshift=0.0f;
+  peas.color={255,(unsigned char)(255*(1.0f-peas.redshift*0.8f)),(unsigned char)(255*(1.0f-peas.redshift))};
 }
 
 int main(){
@@ -89,6 +103,7 @@ int main(){
         photo1[i].dire  = {0.707f, 0.707f};
         photo1[i].posi  = {50.0f, 280.0f + i * 10.0f}; // spread vertically   //go tweak the PHOTO_COUNT for funnn
         photo1[i].init();
+        photo1[i].redshift=0.0f;
         for (int j = 0; j < TRAIL_LENGTH; j++) photo1[i].trail[j] = photo1[i].posi;
 
   }
@@ -104,6 +119,7 @@ int main(){
 
     for(int i=0;i<PHOTON_COUNT;i++){
       gravy(photo1[i],hole);
+      UpdateRedshift(photo1[i],hole);
       photo1[i].posi.x+=photo1[i].dire.x*photo1[i].speed*GetFrameTime();
       photo1[i].posi.y+=photo1[i].dire.y*photo1[i].speed*GetFrameTime();
 
@@ -133,7 +149,7 @@ int main(){
         alpha*=alpha;
         DrawCircleV(photo1[i].trail[index],photo1[i].r,Fade(photo1[i].color,alpha));
       }
-      DrawCircleV(photo1[i].posi,photo1[i].r,WHITE);
+      DrawCircleV(photo1[i].posi,photo1[i].r,photo1[i].color);
     }
 
     EndDrawing();
